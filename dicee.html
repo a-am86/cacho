@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Juego tradicional boliviano de dados para 2-6 jugadores. Juega Cacho online gratis.">
+    <meta name="theme-color" content="#4ECCA3">
+
+    <title>Cacho Alalay - Juego de Dados</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="images/icon-192.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cacho">
+
+    <!-- Estilos y fuentes -->
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Indie+Flower|Lobster"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Pantalla de selección de jugadores -->
+      <div id="playerSelection">
+        <h1>Cacho Alalay</h1>
+        <p>Selecciona la cantidad de jugadores:</p>
+        <div class="player-buttons">
+          <button class="player-btn" data-players="2">2 Jugadores</button>
+          <button class="player-btn" data-players="3">3 Jugadores</button>
+          <button class="player-btn" data-players="4">4 Jugadores</button>
+          <button class="player-btn" data-players="5">5 Jugadores</button>
+          <button class="player-btn" data-players="6">6 Jugadores</button>
+        </div>
+      </div>
+
+      <!-- Pantalla del juego (oculta al inicio) -->
+      <div id="gameArea" style="display: none;">
+        <!-- Controles superiores -->
+        <div id="topControls">
+          <button id="helpButton" title="Cómo jugar">❓</button>
+          <button id="muteButton" title="Activar sonido (desactivado por defecto)">🔇</button>
+        </div>
+
+        <h1 id="gameTitle">Cacho Alalay</h1>
+
+        <!-- Tabla de puntaje -->
+        <div id="scoreTableContainer"></div>
+
+        <!-- Información del jugador actual -->
+        <div id="playerInfo">
+          <h2>Turno del <span id="currentPlayer">Jugador 1</span></h2>
+          <p id="throwInfo">Lanzamiento 1 de 2</p>
+        </div>
+
+        <div class="dice" id="dice1">
+          <img class="img" src="./images/dice6.png" />
+        </div>
+
+        <div class="dice" id="dice2">
+          <img class="img" src="./images/dice6.png" />
+        </div>
+
+        <div class="dice" id="dice3">
+          <img class="img" src="./images/dice6.png" />
+        </div>
+
+        <div class="dice" id="dice4">
+          <img class="img" src="./images/dice6.png" />
+        </div>
+
+        <div class="dice" id="dice5">
+          <img class="img" src="./images/dice6.png" />
+        </div>
+
+        <button id="launchButton">Lancer les dés</button>
+        <button id="relaunchButton" style="display: none;">Relancer les dés non gardés</button>
+
+        <!-- Sección de giro de dados -->
+        <div id="flipSection" style="display: none;">
+          <p id="flipInfo">Debes girar 1 dado (obligatorio) y puedes girar 1 más (opcional)</p>
+          <p id="flipCount">Dados girados: <span id="flippedCount">0</span>/2 - Obligatorio: <span id="obligatoryDone">No</span></p>
+          <button id="confirmFlipButton">Ver resultado</button>
+        </div>
+
+        <!-- Sección de resultado final -->
+        <div id="resultSection" style="display: none;">
+          <h3>Tus opciones:</h3>
+          <div id="combinationsList"></div>
+        </div>
+
+        <!-- Botón para terminar turno después del primer lanzamiento -->
+        <button id="endTurnButton" style="display: none;">Terminar turno</button>
+      </div>
+    </div>
+
+    <!-- Modal de Cómo Jugar -->
+    <div id="helpModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>📖 Cómo Jugar Cacho Alalay</h2>
+
+        <div class="help-section">
+          <h3>🎯 Objetivo</h3>
+          <p>Obtener la mayor puntuación completando combinaciones con 5 dados.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>🎲 Mecánica del juego</h3>
+          <p><strong>1. Lanzar:</strong> Cada turno tienes 2 lanzamientos.</p>
+          <p><strong>2. Guardar:</strong> Después del primer lanzamiento, puedes guardar dados haciendo click en ellos.</p>
+          <p><strong>3. Girar (opcional):</strong> Después del 2do lanzamiento, puedes girar hasta 2 dados para mejorar tu jugada.</p>
+          <p><strong>4. Anotar:</strong> Elige una combinación de la lista para anotar en tu tabla.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>🏆 Combinaciones</h3>
+          <p><strong>Números (Balas a Cenas):</strong> Suma de dados iguales (ej: tres 5s = 15 pts)</p>
+          <p><strong>Escalera:</strong> Secuencia 1-2-3-4-5 = 25 pts (30 de mano)</p>
+          <p><strong>Full:</strong> 3 iguales + 2 iguales = 35 pts (40 de mano)</p>
+          <p><strong>Póquer:</strong> 4 dados iguales = 45 pts (50 de mano)</p>
+          <p><strong>Grande:</strong> 5 dados iguales = 60 pts (puedes anotar 2 veces)</p>
+          <p><strong>Dormida:</strong> Grande en el primer tiro = ¡GANAS INMEDIATAMENTE! 🎉</p>
+        </div>
+
+        <div class="help-section">
+          <h3>💡 Importante</h3>
+          <p>• <strong>"De mano"</strong> significa que NO relanzaste ni giraste dados después del primer tiro (+5 pts bonus en combinaciones especiales)</p>
+          <p>• Si no puedes anotar ninguna combinación, debes <strong>"matar"</strong> una casilla (0 puntos)</p>
+          <p>• El juego termina cuando todos completan sus 11 jugadas</p>
+        </div>
+
+        <button class="close-help-btn" onclick="document.getElementById('helpModal').style.display='none'">Entendido</button>
+      </div>
+    </div>
+
+    <footer>Adrien Arzabe</footer>
+    <script src="./index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,621 @@
+.container {
+  width: 70%;
+  margin: auto;
+  text-align: center;
+}
+
+.dice {
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* Animación de dados rodando */
+.dice.rolling {
+  animation: diceRoll 0.6s ease-out;
+}
+
+@keyframes diceRoll {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-30px) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-10px) rotate(270deg);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+  }
+}
+
+body {
+  background-color: #393E46;
+}
+
+h1 {
+  margin: 30px;
+  font-family: 'Lobster', cursive;
+  text-shadow: 5px 0 #232931;
+  font-size: 4rem; /* Réduit un peu pour mieux s'adapter */
+  color: #4ECCA3;
+}
+
+p {
+  font-size: 2rem;
+  color: #4ECCA3;
+  font-family: 'Indie Flower', cursive;
+}
+
+img {
+  width: 80%;
+}
+
+footer {
+  margin-top: 5%;
+  color: #EEEEEE;
+  text-align: center;
+  font-family: 'Indie Flower', cursive;
+}
+
+button {
+  margin: 20px;
+  padding: 10px 20px;
+  font-size: 1.5rem;
+  background-color: #4ECCA3;
+  color: #232931;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #3CBE8E;
+}
+
+/* Style pour les dés gardés */
+.kept {
+  border: 3px solid #FFD700;
+  border-radius: 10px;
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  transition: all 0.3s ease;
+}
+
+/* Estilos para la selección de jugadores */
+.player-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.player-btn {
+  background-color: #4ECCA3;
+  color: #232931;
+  padding: 15px 30px;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.player-btn:hover {
+  background-color: #3CBE8E;
+  transform: scale(1.05);
+}
+
+/* Información del jugador */
+#playerInfo {
+  margin: 20px 0;
+}
+
+#playerInfo h2 {
+  font-family: 'Lobster', cursive;
+  color: #4ECCA3;
+  font-size: 2.5rem;
+  margin: 10px 0;
+  text-shadow: 3px 0 #232931;
+}
+
+#currentPlayer {
+  color: #FFD700;
+}
+
+#throwInfo {
+  font-family: 'Indie Flower', cursive;
+  color: #EEEEEE;
+  font-size: 1.5rem;
+  margin: 10px 0;
+}
+
+/* Estilos adicionales para botones */
+#endTurnButton {
+  background-color: #FFD700;
+  color: #232931;
+}
+
+#endTurnButton:hover {
+  background-color: #FFC700;
+}
+
+/* Sección de giro de dados */
+#flipSection {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: rgba(78, 204, 163, 0.1);
+  border-radius: 10px;
+  border: 2px solid #4ECCA3;
+}
+
+#flipInfo {
+  font-family: 'Indie Flower', cursive;
+  color: #4ECCA3;
+  font-size: 1.3rem;
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+#flipCount {
+  font-family: 'Indie Flower', cursive;
+  color: #EEEEEE;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+#flippedCount, #obligatoryDone {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+#confirmFlipButton {
+  background-color: #FFD700;
+  color: #232931;
+  font-size: 1.5rem;
+  padding: 15px 30px;
+  margin-top: 10px;
+}
+
+#confirmFlipButton:hover {
+  background-color: #FFC700;
+}
+
+/* Estilo para dados girados */
+.flipped {
+  border: 3px solid #00FF00 !important; /* Borde verde para dados girados */
+  border-radius: 10px;
+  box-shadow: 0 0 15px #00FF00;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Sección de resultado final */
+#resultSection {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: rgba(255, 215, 0, 0.15);
+  border-radius: 10px;
+  border: 3px solid #FFD700;
+}
+
+#finalResult {
+  font-family: 'Lobster', cursive;
+  color: #FFD700;
+  font-size: 2rem;
+  margin: 15px 0;
+  text-shadow: 2px 2px #232931;
+  font-weight: bold;
+}
+
+#resultSection #endTurnButton {
+  display: inline-block !important;
+  background-color: #FFD700;
+  color: #232931;
+  margin-top: 15px;
+}
+
+#resultSection #endTurnButton:hover {
+  background-color: #FFC700;
+}
+
+#resultSection h3 {
+  font-family: 'Lobster', cursive;
+  color: #4ECCA3;
+  font-size: 2rem;
+  margin: 10px 0;
+  text-shadow: 2px 2px #232931;
+}
+
+/* Opciones de combinaciones */
+.combination-option {
+  background-color: rgba(78, 204, 163, 0.2);
+  border: 2px solid #4ECCA3;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.combination-option:hover {
+  background-color: rgba(78, 204, 163, 0.3);
+  transform: translateX(5px);
+}
+
+.combo-name {
+  font-family: 'Lobster', cursive;
+  color: #FFD700;
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex: 1;
+}
+
+.combo-desc {
+  font-family: 'Indie Flower', cursive;
+  color: #EEEEEE;
+  font-size: 1.2rem;
+  flex: 1;
+  text-align: center;
+}
+
+.combo-points {
+  font-family: 'Lobster', cursive;
+  color: #4ECCA3;
+  font-size: 1.4rem;
+  font-weight: bold;
+  flex: 0.5;
+  text-align: right;
+}
+
+/* Badge de jugada "de mano" */
+.de-mano-badge {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #232931;
+  font-family: 'Lobster', cursive;
+  font-size: 1.3rem;
+  padding: 10px 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 15px 0;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+  }
+}
+
+/* Dormida (ganador) */
+.dormida-win {
+  background: linear-gradient(135deg, #FF0000, #FF6B6B);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  animation: celebration 1s infinite alternate;
+}
+
+.dormida-win h2 {
+  font-size: 3rem;
+  margin: 10px 0;
+  text-shadow: 3px 3px #000;
+}
+
+.winner-text {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+@keyframes celebration {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Tabla de puntaje */
+#scoreTableContainer {
+  margin: 20px auto;
+  max-width: 90%;
+  overflow-x: auto;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: rgba(35, 41, 49, 0.8);
+  border: 3px solid #4ECCA3;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: 'Indie Flower', cursive;
+}
+
+.score-table thead {
+  background-color: #4ECCA3;
+  color: #232931;
+}
+
+.score-table th {
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: 1px solid #232931;
+}
+
+.score-table td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #4ECCA3;
+  color: #EEEEEE;
+  font-size: 1.1rem;
+}
+
+.category-name {
+  text-align: left !important;
+  font-weight: bold;
+  color: #4ECCA3 !important;
+  padding-left: 15px !important;
+}
+
+.score-cell {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.score-cell:hover {
+  background-color: rgba(78, 204, 163, 0.2);
+}
+
+.empty-cell {
+  color: #666;
+  font-style: italic;
+}
+
+.filled-cell {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.killed-cell {
+  color: #FF0000;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.total-row {
+  background-color: rgba(78, 204, 163, 0.3);
+  border-top: 3px solid #4ECCA3;
+}
+
+.total-cell {
+  font-size: 1.4rem;
+  color: #FFD700 !important;
+}
+
+/* Opciones de combinaciones actualizadas */
+.combination-option.unavailable {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  background-color: rgba(100, 100, 100, 0.2);
+}
+
+.combination-option.unavailable:hover {
+  background-color: rgba(100, 100, 100, 0.2);
+  transform: none;
+}
+
+.combination-option.available {
+  cursor: pointer;
+}
+
+.kill-option {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-color: #FF6B6B;
+}
+
+.kill-option:hover {
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+.kill-option-title {
+  font-family: 'Indie Flower', cursive;
+  color: #FF6B6B;
+  font-size: 1.2rem;
+  margin: 15px 0 10px 0;
+  text-align: center;
+}
+
+/* Anuncio de ganador */
+.winner-announcement {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #232931;
+  padding: 40px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.winner-announcement h2 {
+  font-size: 3rem;
+  margin: 10px 0;
+  font-family: 'Lobster', cursive;
+}
+
+.restart-button {
+  margin-top: 20px;
+  padding: 15px 30px;
+  font-size: 1.5rem;
+  background-color: #4ECCA3;
+  color: #232931;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Lobster', cursive;
+}
+
+.restart-button:hover {
+  background-color: #3CBE8E;
+}
+
+/* Controles superiores (ayuda + sonido) */
+#topControls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+#helpButton, #muteButton {
+  background-color: rgba(78, 204, 163, 0.2);
+  border: 2px solid #4ECCA3;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#helpButton:hover, #muteButton:hover {
+  background-color: rgba(78, 204, 163, 0.4);
+  transform: scale(1.1);
+}
+
+#gameArea {
+  position: relative;
+}
+
+/* Modal de Cómo Jugar */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #232931;
+  border: 3px solid #4ECCA3;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2.5rem;
+  color: #4ECCA3;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+  color: #FFD700;
+}
+
+.modal-content h2 {
+  font-family: 'Lobster', cursive;
+  color: #4ECCA3;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px #000;
+}
+
+.help-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: rgba(78, 204, 163, 0.1);
+  border-radius: 10px;
+  border-left: 4px solid #4ECCA3;
+}
+
+.help-section h3 {
+  font-family: 'Lobster', cursive;
+  color: #FFD700;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.help-section p {
+  font-family: 'Indie Flower', cursive;
+  color: #EEEEEE;
+  font-size: 1.2rem;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.close-help-btn {
+  background-color: #4ECCA3;
+  color: #232931;
+  padding: 12px 30px;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Lobster', cursive;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.close-help-btn:hover {
+  background-color: #3CBE8E;
+  transform: scale(1.05);
+}
