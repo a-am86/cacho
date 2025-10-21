@@ -648,10 +648,26 @@ button:hover {
     font-size: 1.3rem;
   }
 
-  /* Dados más pequeños y en una sola fila */
+  /* Dados: 3 arriba y 2 abajo (distribución piramidal) */
   .dice {
-    width: 18%;
-    margin: 5px 1%;
+    width: 28%;
+    margin: 8px 2%;
+    display: inline-block;
+  }
+
+  /* Primer fila: 3 dados */
+  .dice:nth-child(1),
+  .dice:nth-child(2),
+  .dice:nth-child(3) {
+    width: 28%;
+    margin: 8px 2%;
+  }
+
+  /* Segunda fila: 2 dados centrados */
+  .dice:nth-child(4),
+  .dice:nth-child(5) {
+    width: 28%;
+    margin: 8px 6%;
   }
 
   .dice img {
