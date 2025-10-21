@@ -681,6 +681,18 @@ button:hover {
     border: 3px solid #FFD700;
   }
 
+  /* Dados girados en móvil - sin animación de pulso */
+  .dice.flipped {
+    animation: none !important;
+    border: 3px solid #4ECCA3;
+    box-shadow: 0 0 15px rgba(78, 204, 163, 0.6);
+  }
+
+  /* Desactivar animación de rolling en móvil */
+  .dice.rolling {
+    animation: none !important;
+  }
+
   /* Ajustar tamaño de texto */
   p {
     font-size: 1.3rem;
