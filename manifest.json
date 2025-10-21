@@ -2,7 +2,7 @@
   "name": "Cacho Alalay",
   "short_name": "Cacho",
   "description": "Juego tradicional boliviano de dados para 2-6 jugadores",
-  "start_url": "./dicee.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#393E46",
   "theme_color": "#4ECCA3",
