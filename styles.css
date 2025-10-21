@@ -650,8 +650,8 @@ button:hover {
 
   /* Dados: 3 arriba y 2 abajo (distribución piramidal) */
   .dice {
-    width: 28%;
-    margin: 8px 2%;
+    width: 26%;
+    margin: 8px 2.5%;
     display: inline-block;
   }
 
@@ -659,19 +659,26 @@ button:hover {
   .dice:nth-child(1),
   .dice:nth-child(2),
   .dice:nth-child(3) {
-    width: 28%;
-    margin: 8px 2%;
+    width: 26%;
+    margin: 8px 2.5%;
   }
 
   /* Segunda fila: 2 dados centrados */
   .dice:nth-child(4),
   .dice:nth-child(5) {
-    width: 28%;
-    margin: 8px 6%;
+    width: 26%;
+    margin: 8px 8%;
   }
 
   .dice img {
     width: 100%;
+  }
+
+  /* Dados guardados en móvil - sin escala para evitar movimiento */
+  .dice.kept {
+    transform: scale(1) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    border: 3px solid #FFD700;
   }
 
   /* Ajustar tamaño de texto */
