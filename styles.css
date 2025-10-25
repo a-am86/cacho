@@ -61,6 +61,16 @@ footer {
   color: #EEEEEE;
   text-align: center;
   font-family: 'Indie Flower', cursive;
+  position: relative;
+}
+
+.version {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 0.9rem;
+  color: #4ECCA3;
+  opacity: 0.7;
 }
 
 button {
@@ -110,6 +120,93 @@ button:hover {
 .player-btn:hover {
   background-color: #3CBE8E;
   transform: scale(1.05);
+}
+
+/* Estilos para botones de modo */
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+  align-items: center;
+}
+
+.mode-btn {
+  background: linear-gradient(135deg, #4ECCA3, #3CBE8E);
+  color: #232931;
+  padding: 20px 40px;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 300px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(78, 204, 163, 0.3);
+}
+
+.mode-btn:hover {
+  background: linear-gradient(135deg, #3CBE8E, #4ECCA3);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(78, 204, 163, 0.5);
+}
+
+/* Estilos para botones de dificultad */
+.difficulty-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 30px;
+  align-items: center;
+}
+
+.difficulty-btn {
+  padding: 15px 35px;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+  font-weight: bold;
+}
+
+.difficulty-btn[data-difficulty="easy"] {
+  background: linear-gradient(135deg, #90EE90, #32CD32);
+  color: #232931;
+}
+
+.difficulty-btn[data-difficulty="medium"] {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #232931;
+}
+
+.difficulty-btn[data-difficulty="hard"] {
+  background: linear-gradient(135deg, #FF6B6B, #FF0000);
+  color: white;
+}
+
+.difficulty-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón de volver */
+.back-btn {
+  background-color: #666;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #555;
+  transform: translateX(-5px);
 }
 
 /* Información del jugador */
@@ -784,5 +881,27 @@ button:hover {
 
   .winner-announcement h2 {
     font-size: 2.2rem;
+  }
+
+  /* Botones de modo en móvil */
+  .mode-btn {
+    min-width: 250px;
+    padding: 15px 30px;
+    font-size: 1.3rem;
+  }
+
+  /* Botones de dificultad en móvil */
+  .difficulty-btn {
+    min-width: 200px;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+  }
+
+  /* Versión en móvil */
+  .version {
+    position: static;
+    display: block;
+    margin-top: 10px;
+    font-size: 0.8rem;
   }
 }

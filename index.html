@@ -29,13 +29,34 @@
       <!-- Pantalla de selección de jugadores -->
       <div id="playerSelection">
         <h1>Cacho Alalay</h1>
-        <p>Selecciona la cantidad de jugadores:</p>
-        <div class="player-buttons">
-          <button class="player-btn" data-players="2">2 Jugadores</button>
-          <button class="player-btn" data-players="3">3 Jugadores</button>
-          <button class="player-btn" data-players="4">4 Jugadores</button>
-          <button class="player-btn" data-players="5">5 Jugadores</button>
-          <button class="player-btn" data-players="6">6 Jugadores</button>
+        <p>Selecciona el modo de juego:</p>
+        <div class="mode-buttons">
+          <button class="mode-btn" id="humanModeBtn">👥 Todos Humanos</button>
+          <button class="mode-btn" id="botModeBtn">🤖 Jugar contra Bot</button>
+        </div>
+
+        <!-- Selección para modo humanos (oculta al inicio) -->
+        <div id="humanModeSelection" style="display: none;">
+          <p>Selecciona la cantidad de jugadores:</p>
+          <div class="player-buttons">
+            <button class="player-btn" data-players="2">2 Jugadores</button>
+            <button class="player-btn" data-players="3">3 Jugadores</button>
+            <button class="player-btn" data-players="4">4 Jugadores</button>
+            <button class="player-btn" data-players="5">5 Jugadores</button>
+            <button class="player-btn" data-players="6">6 Jugadores</button>
+          </div>
+          <button class="back-btn" id="backFromHuman">← Volver</button>
+        </div>
+
+        <!-- Selección para modo bot (oculta al inicio) -->
+        <div id="botModeSelection" style="display: none;">
+          <p>Selecciona la dificultad del bot:</p>
+          <div class="difficulty-buttons">
+            <button class="difficulty-btn" data-difficulty="easy">😊 Fácil</button>
+            <button class="difficulty-btn" data-difficulty="medium">🤔 Medio</button>
+            <button class="difficulty-btn" data-difficulty="hard">😈 Difícil</button>
+          </div>
+          <button class="back-btn" id="backFromBot">← Volver</button>
         </div>
       </div>
 
@@ -139,7 +160,10 @@
       </div>
     </div>
 
-    <footer>Adrien Arzabe</footer>
+    <footer>
+      Adrien Arzabe
+      <span class="version">v1.2.1</span>
+    </footer>
     <script src="./index.js"></script>
   </body>
 </html>

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Bot con IA avanzada y mejoras de UX (v1.2.1)\n\n- Implementada IA avanzada que anticipa todos los giros posibles (1↔6, 2↔5, 3↔4)\n- Bot evalúa 16 escenarios antes de decidir qué dados girar\n- Decisiones de guardar dados consideran potencial con giros\n- Agregada tarjeta visual mostrando decisión del bot\n- Colores dinámicos según calidad de jugada\n- Mejorada experiencia sin necesidad de scroll\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

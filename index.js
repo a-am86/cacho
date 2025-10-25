@@ -89,6 +89,412 @@ let flippedDice = [false, false, false, false, false]; // Dados que han sido gir
 let flipCount = 0; // Contador de dados girados (max 2)
 let isFlipMode = false; // Modo de giro activado
 let isDeMano = false; // Si la jugada es "de mano" (sin giros)
+let gameMode = null; // 'human' o 'bot'
+let botDifficulty = null; // 'easy', 'medium', 'hard'
+let isProcessingBotTurn = false; // Flag para evitar múltiples turnos del bot
+
+// ===== CLASE BOT CON INTELIGENCIA ARTIFICIAL =====
+class CachoBot {
+  constructor(difficulty = 'medium') {
+    this.difficulty = difficulty;
+  }
+
+  // Función auxiliar: Obtener lado opuesto del dado
+  getOpposite(value) {
+    return 7 - value;
+  }
+
+  // Función auxiliar: Evaluar el puntaje potencial de una combinación de dados
+  evaluateDiceValue(diceValues) {
+    const sorted = diceValues.slice().sort((a, b) => a - b);
+    const str = sorted.join('');
+    const counts = {};
+    diceValues.forEach(val => counts[val] = (counts[val] || 0) + 1);
+    const maxCount = Math.max(...Object.values(counts));
+
+    // Asignar valor a cada tipo de combinación
+    if (maxCount === 5) return 1000; // Grande
+    if (maxCount === 4) return 500;  // Póquer
+    if (maxCount === 3 && Object.keys(counts).length === 2) return 400; // Full
+    if (str === '12345' || str === '23456') return 300; // Escalera
+    if (maxCount === 3) return 150; // Triple
+    if (maxCount === 2) {
+      // Par - valorar más los pares altos
+      const pairNum = parseInt(Object.keys(counts).find(k => counts[k] === 2));
+      return 50 + (pairNum * 10); // Par de 6s vale más que par de 1s
+    }
+
+    // Sin combinación - sumar valores
+    return diceValues.reduce((sum, val) => sum + val, 0);
+  }
+
+  // Función avanzada: Simular todas las posibilidades de giro
+  evaluateFlipPotential(diceValues) {
+    // Generar todas las combinaciones posibles de giros (0 a 2 dados)
+    const possibilities = [];
+
+    // Sin girar
+    possibilities.push({
+      flipped: [],
+      result: diceValues.slice(),
+      score: this.evaluateDiceValue(diceValues)
+    });
+
+    // Girar 1 dado
+    for (let i = 0; i < 5; i++) {
+      const newDice = diceValues.slice();
+      newDice[i] = this.getOpposite(newDice[i]);
+      possibilities.push({
+        flipped: [i],
+        result: newDice,
+        score: this.evaluateDiceValue(newDice)
+      });
+    }
+
+    // Girar 2 dados
+    for (let i = 0; i < 5; i++) {
+      for (let j = i + 1; j < 5; j++) {
+        const newDice = diceValues.slice();
+        newDice[i] = this.getOpposite(newDice[i]);
+        newDice[j] = this.getOpposite(newDice[j]);
+        possibilities.push({
+          flipped: [i, j],
+          result: newDice,
+          score: this.evaluateDiceValue(newDice)
+        });
+      }
+    }
+
+    // Retornar la mejor opción
+    return possibilities.reduce((best, curr) =>
+      curr.score > best.score ? curr : best
+    );
+  }
+
+  // DECISIÓN 1: ¿Qué dados guardar después del primer lanzamiento?
+  decideKeepDice(diceValues) {
+    if (this.difficulty === 'easy') {
+      return this.decideKeepDiceEasy(diceValues);
+    } else if (this.difficulty === 'medium') {
+      return this.decideKeepDiceMedium(diceValues);
+    } else {
+      return this.decideKeepDiceHard(diceValues);
+    }
+  }
+
+  // Fácil: Guardar dados de forma aleatoria o básica
+  decideKeepDiceEasy(diceValues) {
+    const keep = [false, false, false, false, false];
+    // Guardar aleatoriamente 0-3 dados
+    const numToKeep = Math.floor(Math.random() * 4);
+    for (let i = 0; i < numToKeep; i++) {
+      const randomIndex = Math.floor(Math.random() * 5);
+      keep[randomIndex] = true;
+    }
+    return keep;
+  }
+
+  // Medio: Guardar dados que forman pares o triples
+  decideKeepDiceMedium(diceValues) {
+    const keep = [false, false, false, false, false];
+    const counts = {};
+
+    diceValues.forEach((val, idx) => {
+      if (!counts[val]) counts[val] = [];
+      counts[val].push(idx);
+    });
+
+    // Guardar el número que más se repite
+    let maxCount = 0;
+    let maxNum = null;
+    for (let num in counts) {
+      if (counts[num].length > maxCount) {
+        maxCount = counts[num].length;
+        maxNum = num;
+      }
+    }
+
+    if (maxNum && maxCount >= 2) {
+      counts[maxNum].forEach(idx => keep[idx] = true);
+    }
+
+    return keep;
+  }
+
+  // Difícil: Estrategia óptima considerando probabilidades Y giros potenciales
+  decideKeepDiceHard(diceValues, player) {
+    const keep = [false, false, false, false, false];
+
+    // Evaluar el mejor resultado posible con giros desde la posición actual
+    const bestWithFlip = this.evaluateFlipPotential(diceValues);
+
+    const counts = {};
+    diceValues.forEach((val, idx) => {
+      if (!counts[val]) counts[val] = [];
+      counts[val].push(idx);
+    });
+
+    const sorted = Object.entries(counts).sort((a, b) => b[1].length - a[1].length);
+    const maxCount = sorted[0][1].length;
+
+    // Si tengo 5 iguales, guardar todos (Grande garantizado)
+    if (maxCount === 5) {
+      sorted[0][1].forEach(idx => keep[idx] = true);
+      return keep;
+    }
+
+    // Si tengo 4 iguales
+    if (maxCount === 4) {
+      const majorityNum = parseInt(sorted[0][0]);
+      const minorityIdx = diceValues.findIndex(val => val !== majorityNum);
+      const minorityVal = diceValues[minorityIdx];
+
+      // Considerar: ¿Vale la pena intentar Grande girando el diferente?
+      const flippedVal = this.getOpposite(minorityVal);
+
+      if (flippedVal === majorityNum) {
+        // ¡Giro da Grande! Guardar todo
+        sorted[0][1].forEach(idx => keep[idx] = true);
+        keep[minorityIdx] = true;
+        return keep;
+      } else {
+        // Guardar los 4 + el diferente si es alto
+        sorted[0][1].forEach(idx => keep[idx] = true);
+        if (minorityVal >= 5 || flippedVal >= 5) {
+          keep[minorityIdx] = true;
+        }
+        return keep;
+      }
+    }
+
+    // Si tengo 3 iguales
+    if (maxCount === 3) {
+      sorted[0][1].forEach(idx => keep[idx] = true);
+
+      // Si hay un par, guardarlo (full)
+      if (sorted.length > 1 && sorted[1][1].length === 2) {
+        sorted[1][1].forEach(idx => keep[idx] = true);
+        return keep;
+      }
+
+      // Si no hay par, guardar valores altos o que al girar sean altos
+      diceValues.forEach((val, idx) => {
+        if (!keep[idx]) {
+          const flipped = this.getOpposite(val);
+          if (val >= 5 || flipped >= 5) {
+            keep[idx] = true;
+          }
+        }
+      });
+
+      return keep;
+    }
+
+    // Verificar escalera potencial
+    const sortedVals = diceValues.slice().sort();
+    const str = sortedVals.join('');
+    if (str === '12345' || str === '23456') {
+      // Escalera completa, guardar todo
+      return [true, true, true, true, true];
+    }
+    if (str.includes('1234') || str.includes('2345') || str.includes('3456')) {
+      // 4 consecutivos, guardar esos
+      const target = str.includes('1234') ? [1,2,3,4] : str.includes('2345') ? [2,3,4,5] : [3,4,5,6];
+      diceValues.forEach((val, idx) => {
+        if (target.includes(val)) keep[idx] = true;
+      });
+      return keep;
+    }
+
+    // Si tengo un par, analizar si vale la pena guardarlo
+    if (maxCount === 2) {
+      const pairNum = parseInt(sorted[0][0]);
+      const pairIndices = sorted[0][1];
+
+      // ¿El par es alto (5-6) o bajo (1-2)?
+      if (pairNum >= 5) {
+        // Par alto, guardarlo
+        pairIndices.forEach(idx => keep[idx] = true);
+      } else if (pairNum <= 2) {
+        // Par bajo - considerar girarlos después
+        const flippedPairNum = this.getOpposite(pairNum);
+        if (flippedPairNum >= 5) {
+          // Si al girar se vuelven altos, guardar
+          pairIndices.forEach(idx => keep[idx] = true);
+        }
+      } else {
+        // Par medio (3-4), guardar
+        pairIndices.forEach(idx => keep[idx] = true);
+      }
+
+      // Guardar también valores que sean altos o al girar sean altos
+      diceValues.forEach((val, idx) => {
+        if (!keep[idx]) {
+          const flipped = this.getOpposite(val);
+          if (val >= 5 || flipped >= 5) {
+            keep[idx] = true;
+          }
+        }
+      });
+
+      return keep;
+    }
+
+    // No tengo nada especial - guardar dados con potencial alto
+    // Guardar valores que sean >=5 O que al girar sean >=5
+    diceValues.forEach((val, idx) => {
+      const flipped = this.getOpposite(val);
+      if (val >= 5 || flipped >= 5) {
+        keep[idx] = true;
+      }
+    });
+
+    return keep;
+  }
+
+  // DECISIÓN 2: ¿Relanzar o terminar turno?
+  decideRelaunch(diceValues, player) {
+    const combinations = detectAllCombinations(diceValues.slice().sort((a,b) => a-b), true);
+
+    if (this.difficulty === 'easy') {
+      // Aleatorio
+      return Math.random() > 0.5;
+    } else if (this.difficulty === 'medium') {
+      // Si tiene algo bueno (>=35 pts), no relanzar
+      const hasBigCombo = combinations.some(c => c.points >= 35);
+      return !hasBigCombo;
+    } else {
+      // Difícil: Analizar si conviene relanzar considerando giros
+      // Evaluar el mejor resultado posible CON giros
+      const bestWithFlip = this.evaluateFlipPotential(diceValues);
+
+      const availableCombos = combinations.filter(c => {
+        if (c.casilla === 'grande') return player.grandeCount < 2;
+        return player.scorecard[c.casilla] === null;
+      });
+
+      if (availableCombos.length === 0) return true; // No tiene opciones, relanzar
+
+      const bestPoints = Math.max(...availableCombos.map(c => c.points));
+
+      // Considerar el potencial de giro
+      // Si el mejor resultado con giro es muy bueno (score > 400 = full o mejor), quedarse
+      if (bestWithFlip.score >= 400) return false;
+
+      // Si tiene combinación decente (>=35 pts) y buen potencial de giro, no relanzar
+      if (bestPoints >= 35 && bestWithFlip.score >= 200) return false;
+
+      // Si tiene menos de 25 puntos, relanzar
+      if (bestPoints < 25) return true;
+
+      // Entre 25-35 puntos, decidir según potencial de giro
+      return bestWithFlip.score < 150;
+    }
+  }
+
+  // DECISIÓN 3: ¿Qué dados girar?
+  decideFlipDice(diceValues, player) {
+    if (this.difficulty === 'easy') {
+      // No girar o girar aleatoriamente
+      if (Math.random() > 0.5) return [];
+      const numToFlip = Math.random() > 0.5 ? 1 : 2;
+      const indices = [];
+      while (indices.length < numToFlip) {
+        const idx = Math.floor(Math.random() * 5);
+        if (!indices.includes(idx)) indices.push(idx);
+      }
+      return indices;
+    } else if (this.difficulty === 'medium') {
+      // Girar los dados más bajos solo si mejora
+      const indexed = diceValues.map((val, idx) => ({val, idx}));
+      indexed.sort((a, b) => a.val - b.val);
+      // Girar los 2 más bajos si valen menos de 4
+      const toFlip = [];
+      for (let i = 0; i < Math.min(2, indexed.length); i++) {
+        if (indexed[i].val < 4) {
+          toFlip.push(indexed[i].idx);
+        }
+      }
+      return toFlip;
+    } else {
+      // Difícil: Usar evaluación completa de todas las posibilidades
+      const bestOption = this.evaluateFlipPotential(diceValues);
+
+      // Si la mejor opción es no girar nada, retornar array vacío
+      if (bestOption.flipped.length === 0) {
+        return [];
+      }
+
+      // Retornar los índices de los dados a girar
+      return bestOption.flipped;
+    }
+  }
+
+  // DECISIÓN 4: ¿Qué combinación seleccionar?
+  decideSelectCombination(combinations, player) {
+    // Filtrar solo las disponibles
+    const available = combinations.filter(combo => {
+      if (combo.casilla === 'grande') {
+        return player.grandeCount < 2;
+      }
+      return player.scorecard[combo.casilla] === null;
+    });
+
+    if (available.length === 0) {
+      // Debe matar una casilla - elegir la menos valiosa disponible
+      return this.decideBestCellToKill(player);
+    }
+
+    if (this.difficulty === 'easy') {
+      // Elegir aleatoriamente
+      return available[Math.floor(Math.random() * available.length)];
+    } else if (this.difficulty === 'medium') {
+      // Elegir la de mayor puntaje
+      return available.reduce((best, curr) => curr.points > best.points ? curr : best);
+    } else {
+      // Difícil: Considerar estrategia a largo plazo
+      // Priorizar: Grande > Póquer > Full > Escalera > Números altos
+      const priority = {
+        'grande': 1000,
+        'poker': 900,
+        'full': 800,
+        'escalera': 700,
+        'cenas': 600,
+        'quinas': 500,
+        'cuadras': 400,
+        'trenes': 300,
+        'duques': 200,
+        'balas': 100
+      };
+
+      // Calcular score ponderado
+      const scored = available.map(combo => ({
+        combo,
+        score: combo.points + (priority[combo.casilla] || 0)
+      }));
+
+      return scored.reduce((best, curr) => curr.score > best.score ? curr : best).combo;
+    }
+  }
+
+  // Decidir qué casilla matar (cuando no hay opciones)
+  decideBestCellToKill(player) {
+    const killPriority = ['balas', 'duques', 'trenes', 'cuadras', 'quinas', 'cenas', 'escalera', 'full', 'poker'];
+
+    for (let casilla of killPriority) {
+      if (player.scorecard[casilla] === null) {
+        return { casilla, points: 0 };
+      }
+    }
+
+    // Si todo lo demás está usado, matar Grande
+    if (player.grandeCount < 2) {
+      return { casilla: 'grande', points: 0 };
+    }
+
+    return null;
+  }
+}
 
 // Éléments DOM
 const playerSelection = document.getElementById("playerSelection");
@@ -115,10 +521,55 @@ const diceElements = [
   document.getElementById("dice5"),
 ];
 
-// Inicializar selección de jugadores
+// ===== NAVEGACIÓN DEL MENÚ DE SELECCIÓN =====
+const humanModeBtn = document.getElementById("humanModeBtn");
+const botModeBtn = document.getElementById("botModeBtn");
+const humanModeSelection = document.getElementById("humanModeSelection");
+const botModeSelection = document.getElementById("botModeSelection");
+const backFromHuman = document.getElementById("backFromHuman");
+const backFromBot = document.getElementById("backFromBot");
+
+// Mostrar selección de jugadores humanos
+humanModeBtn.addEventListener("click", () => {
+  document.querySelector(".mode-buttons").style.display = "none";
+  humanModeSelection.style.display = "block";
+  gameMode = 'human';
+});
+
+// Mostrar selección de dificultad del bot
+botModeBtn.addEventListener("click", () => {
+  document.querySelector(".mode-buttons").style.display = "none";
+  botModeSelection.style.display = "block";
+  gameMode = 'bot';
+});
+
+// Volver desde selección de humanos
+backFromHuman.addEventListener("click", () => {
+  humanModeSelection.style.display = "none";
+  document.querySelector(".mode-buttons").style.display = "flex";
+  gameMode = null;
+});
+
+// Volver desde selección de bot
+backFromBot.addEventListener("click", () => {
+  botModeSelection.style.display = "none";
+  document.querySelector(".mode-buttons").style.display = "flex";
+  gameMode = null;
+});
+
+// Inicializar selección de jugadores (modo humanos)
 document.querySelectorAll(".player-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     numberOfPlayers = parseInt(btn.getAttribute("data-players"));
+    startGame();
+  });
+});
+
+// Inicializar selección de dificultad (modo bot)
+document.querySelectorAll(".difficulty-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    botDifficulty = btn.getAttribute("data-difficulty");
+    numberOfPlayers = 2; // Siempre 2 jugadores en modo bot
     startGame();
   });
 });
@@ -128,8 +579,11 @@ function startGame() {
   // Inicializar jugadores con tabla de puntaje
   players = [];
   for (let i = 0; i < numberOfPlayers; i++) {
+    const isBot = (gameMode === 'bot' && i === 1);
     players.push({
-      name: `Jugador ${i + 1}`,
+      name: isBot ? '🤖 Bot' : `Jugador ${i + 1}`,
+      isBot: isBot,
+      bot: isBot ? new CachoBot(botDifficulty) : null,
       scorecard: {
         balas: null,      // null = vacía, número = puntos, 0 = matada
         duques: null,
@@ -249,7 +703,7 @@ function updatePlayerDisplay() {
   }
 
   launchCount = 0;
-  throwInfo.textContent = "Haz clic en 'Lancer' para comenzar tu turno";
+  throwInfo.textContent = "Haz clic en 'Lanzar' para comenzar tu turno";
   launchButton.style.display = "inline-block";
   relaunchButton.style.display = "none";
   flipSection.style.display = "none";
@@ -258,15 +712,181 @@ function updatePlayerDisplay() {
   // Limpiar dados guardados y girados
   keptDice = [false, false, false, false, false];
   flippedDice = [false, false, false, false, false];
+  flipCount = 0;
+  isFlipMode = false; // IMPORTANTE: Resetear modo de giro
+  isDeMano = false;
   diceElements.forEach((el) => {
     el.classList.remove("kept");
     el.classList.remove("flipped");
   });
+
+  // Si es el turno del bot, ejecutar automáticamente
+  if (currentPlayer.isBot && !isProcessingBotTurn) {
+    isProcessingBotTurn = true;
+    throwInfo.textContent = `🤖 ${currentPlayer.name} está pensando...`;
+    launchButton.style.display = "none";
+
+    setTimeout(() => {
+      executeBotTurn();
+    }, 1000);
+  }
+}
+
+// ===== EJECUCIÓN DEL TURNO DEL BOT =====
+async function executeBotTurn() {
+  const player = players[currentPlayerIndex];
+  const bot = player.bot;
+
+  // FASE 1: Lanzar dados
+  throwInfo.textContent = `🤖 ${player.name} lanza los dados...`;
+  await sleep(1000);
+  launchDice(true);
+  await sleep(1500);
+
+  // FASE 2: Decidir si guardar dados y relanzar
+  const shouldRelaunch = bot.decideRelaunch(diceValues, player);
+
+  if (shouldRelaunch) {
+    // Guardar dados según decisión del bot
+    const keepDecision = bot.decideKeepDice(diceValues);
+    keptDice = keepDecision;
+
+    // Mostrar visualmente los dados guardados
+    diceElements.forEach((el, idx) => {
+      if (keptDice[idx]) {
+        el.classList.add("kept");
+      }
+    });
+
+    throwInfo.textContent = `🤖 ${player.name} guarda algunos dados y relanza...`;
+    await sleep(1500);
+    launchDice(false);
+    await sleep(1500);
+  } else {
+    throwInfo.textContent = `🤖 ${player.name} decide no relanzar`;
+    await sleep(1000);
+  }
+
+  // FASE 3: Decidir si girar dados
+  const flipDecision = bot.decideFlipDice(diceValues, player);
+
+  if (flipDecision.length > 0) {
+    throwInfo.textContent = `🤖 ${player.name} gira ${flipDecision.length} dado(s)...`;
+    isFlipMode = true;
+
+    for (let idx of flipDecision) {
+      flipDie(idx);
+      await sleep(500);
+    }
+
+    isFlipMode = false;
+    await sleep(1000);
+  }
+
+  // FASE 4: Seleccionar combinación
+  const sortedValues = diceValues.slice().sort((a, b) => a - b);
+  const esRealmenteDeMano = (launchCount === 1 && flipDecision.length === 0);
+  const allCombinations = detectAllCombinations(sortedValues, esRealmenteDeMano);
+
+  // Verificar dormida
+  if (allCombinations.length > 0 && allCombinations[0].type === "dormida") {
+    soundManager.victory();
+    combinationsList.innerHTML = `
+      <div class="combination dormida-win">
+        <h2>🎉 ¡¡¡DORMIDA!!! 🎉</h2>
+        <p>${allCombinations[0].description}</p>
+        <p class="winner-text">¡${player.name} GANA LA PARTIDA!</p>
+      </div>
+    `;
+    resultSection.style.display = "block";
+    throwInfo.textContent = "¡Partida terminada!";
+    isProcessingBotTurn = false;
+    return;
+  }
+
+  const selectedCombo = bot.decideSelectCombination(allCombinations, player);
+
+  // Crear mensaje descriptivo de la selección
+  const casillaNames = {
+    'balas': 'Balas',
+    'duques': 'Duques',
+    'trenes': 'Trenes',
+    'cuadras': 'Cuadras',
+    'quinas': 'Quinas',
+    'cenas': 'Cenas',
+    'escalera': 'Escalera',
+    'full': 'Full',
+    'poker': 'Póquer',
+    'grande': 'Grande'
+  };
+
+  const casillaDisplay = casillaNames[selectedCombo.casilla] || selectedCombo.casilla;
+  const puntosDisplay = selectedCombo.points === 0 ? 'MATADA (0 pts)' : `${selectedCombo.points} pts`;
+  const puntosColor = selectedCombo.points === 0 ? '#FF6B6B' : selectedCombo.points >= 40 ? '#4ECCA3' : '#FFD700';
+
+  // Mostrar resultado visual
+  resultSection.style.display = "block";
+  combinationsList.innerHTML = `
+    <div class="bot-selection-display" style="background: linear-gradient(135deg, rgba(78, 204, 163, 0.2), rgba(78, 204, 163, 0.05));
+         padding: 20px; border-radius: 10px; border: 2px solid ${puntosColor}; text-align: center;">
+      <h3 style="color: #4ECCA3; margin: 10px 0;">🤖 Decisión del Bot</h3>
+      <p style="font-size: 1.5rem; color: #FFD700; margin: 10px 0; font-family: 'Lobster', cursive;">
+        ${casillaDisplay}
+      </p>
+      <p style="font-size: 2rem; color: ${puntosColor}; font-weight: bold; margin: 10px 0; font-family: 'Lobster', cursive;">
+        ${puntosDisplay}
+      </p>
+      <p style="font-size: 1rem; color: #EEEEEE; margin-top: 15px; font-style: italic;">
+        Dados finales: ${diceValues.join(' - ')}
+      </p>
+    </div>
+  `;
+
+  throwInfo.textContent = `🤖 ${player.name} anotó su jugada`;
+  await sleep(2500); // Más tiempo para leer
+
+  // Registrar la selección
+  if (selectedCombo.points === 0) {
+    soundManager.killCell();
+  } else if (selectedCombo.casilla === 'grande' && selectedCombo.points > 0) {
+    soundManager.victory();
+  } else {
+    soundManager.selectCombination();
+  }
+
+  if (selectedCombo.casilla === 'grande') {
+    player.scorecard.grande.push(selectedCombo.points);
+    player.grandeCount++;
+  } else {
+    player.scorecard[selectedCombo.casilla] = selectedCombo.points;
+  }
+
+  calculatePlayerTotal(currentPlayerIndex);
+  createScoreTable();
+
+  // Verificar fin del juego
+  if (checkGameOver()) {
+    announceWinner();
+    isProcessingBotTurn = false;
+    return;
+  }
+
+  // Pasar al siguiente jugador
+  await sleep(1500);
+  resultSection.style.display = "none"; // Ocultar resultado del bot
+  isProcessingBotTurn = false;
+  nextPlayer();
+}
+
+// Función auxiliar para delays
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Pasar al siguiente jugador
 function nextPlayer() {
   currentPlayerIndex = (currentPlayerIndex + 1) % numberOfPlayers;
+  isProcessingBotTurn = false; // Reset del flag
   updatePlayerDisplay();
 }
 

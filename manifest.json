@@ -1,7 +1,8 @@
 {
   "name": "Cacho Alalay",
   "short_name": "Cacho",
-  "description": "Juego tradicional boliviano de dados para 2-6 jugadores",
+  "description": "Juego tradicional boliviano de dados - Modo multijugador y contra bots con IA avanzada",
+  "version": "1.2.1",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#393E46",
